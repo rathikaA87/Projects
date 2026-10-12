@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Happy Hatch – Trading & Inventory Forms</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--ink:#14213d;--mut:#5b6678;--bg:#eceff3;--card:#fff;--line:#d5dbe3;--acc:#0f766e;--accd:#0b5a54;--warn:#b45309;--bad:#b42318;--calc:#eef4f3}
+*{box-sizing:border-box}
+body{margin:0;font:14px/1.45 "Segoe UI",system-ui,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+header{background:var(--ink);color:#fff;padding:12px 20px;display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+header h1{font:600 20px Georgia,"Palatino Linotype",serif;margin:0;flex:1;min-width:200px}header h1 small{display:block;font:400 12px "Segoe UI",Arial,sans-serif;opacity:.75}.logo{width:56px;height:40px;border:1px dashed #8a97b5;border-radius:4px;display:grid;place-items:center;font-size:10px;color:#b9c3da}.ilogo{width:110px;height:60px;border:1px dashed var(--line);display:grid;place-items:center;font-size:11px;color:var(--mut);margin-bottom:8px}
+button,.btn{font:inherit;cursor:pointer;border:1px solid var(--line);background:#fff;color:var(--ink);padding:7px 13px;border-radius:5px}
+button:hover{border-color:var(--acc)}
+button.pri{background:var(--acc);border-color:var(--acc);color:#fff}button.pri:hover{background:var(--accd)}
+button.del{color:var(--bad)}
+header button{background:transparent;color:#fff;border-color:#4a587a}
+header button:hover{border-color:#fff}
+:focus-visible{outline:2px solid #f59e0b;outline-offset:2px}
+nav{display:flex;gap:2px;background:#fff;border-bottom:1px solid var(--line);padding:0 14px;overflow-x:auto}
+nav button{border:0;border-bottom:3px solid transparent;border-radius:0;padding:11px 14px;background:none;white-space:nowrap}
+nav button.on{border-bottom-color:var(--acc);font-weight:600}
+main{padding:18px 20px;max-width:1300px;margin:auto}
+.bar{display:flex;gap:10px;flex-wrap:wrap;align-items:end;margin-bottom:12px}
+.bar label{display:flex;flex-direction:column;font-size:12px;color:var(--mut);gap:3px}
+input,select,textarea{font:inherit;padding:7px 9px;border:1px solid var(--line);border-radius:5px;background:#fff;color:var(--ink);min-width:0}
+.card{background:var(--card);border:1px solid var(--line);border-radius:6px}
+.tw{overflow:auto;max-height:62vh}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th{position:sticky;top:0;background:#f3f5f8;text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);white-space:nowrap}
+td{padding:7px 10px;border-bottom:1px solid #edf0f4;white-space:nowrap;max-width:280px;overflow:hidden;text-overflow:ellipsis}
+td.c{background:var(--calc)} td.n,th.n{text-align:right}
+td.act{text-align:right;background:#fff;position:sticky;right:0}
+.empty{padding:28px;text-align:center;color:var(--mut)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:16px}
+.kpi{padding:12px 14px}.kpi small{color:var(--mut)}.kpi b{display:block;font:600 22px Georgia,serif;margin-top:2px}
+h2{font:600 16px Georgia,serif;margin:18px 0 8px}
+.ok{color:var(--acc)}.low{color:var(--warn);font-weight:600}.out{color:var(--bad);font-weight:600}
+.bars div.r{display:grid;grid-template-columns:150px 1fr 90px;gap:8px;align-items:center;margin:5px 0;font-size:13px}
+.bars i{display:block;height:14px;background:var(--acc);border-radius:2px}
+dialog{border:0;border-radius:8px;padding:0;width:min(640px,94vw);box-shadow:0 18px 50px #0006}
+dialog::backdrop{background:#14213d99}
+.dh{padding:14px 18px;border-bottom:1px solid var(--line);font:600 16px Georgia,serif}
+.db{padding:16px 18px;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;max-height:68vh;overflow:auto}
+.db label{display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mut)}
+.db input,.db select,.db textarea{width:100%}.pbox{grid-column:1/-1;display:flex;flex-direction:column;gap:3px;font-size:12px;color:var(--mut)}.db label.w{grid-column:1/-1}
+.db input[readonly],.db .calc{background:var(--calc)}
+.db .calc{padding:7px 9px;border:1px dashed var(--line);border-radius:5px;color:var(--ink);font-size:14px;min-height:34px}
+.df{padding:12px 18px;border-top:1px solid var(--line);display:flex;gap:8px;justify-content:flex-end;align-items:center}
+.msg{margin-right:auto;font-size:13px;color:var(--bad)}.msg.w{color:var(--warn)}
+.inv{background:#fff;padding:26px;max-width:820px}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:var(--ink);color:#fff;padding:9px 16px;border-radius:6px;display:none;z-index:9}
+.th{height:34px;width:34px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px}.hint{background:#fff8e6;border:1px solid #f1d58a;padding:9px 12px;border-radius:6px;margin-bottom:12px;font-size:13px}
+@media(max-width:600px){.db{grid-template-columns:minmax(0,1fr)}.bars div.r{grid-template-columns:90px 1fr 70px}}
+#pall{display:none}@media print{body.pa>*:not(#pall){display:none!important}body.pa #pall{display:block}#pall .pg{page-break-after:always;padding:10mm}#pall .pg:last-child{page-break-after:auto}#pall .inv{border:0;max-width:none}header,nav,.bar,.noprint,.th{height:34px;width:34px;object-fit:cover;border-radius:3px;vertical-align:middle;margin-right:6px}.hint{display:none!important}body{background:#fff}main{padding:0}.inv{border:0;padding:0}}
+</style></head><body>
+<header><div class="logo" title="Replace with Happy Hatch logo">LOGO</div><h1>Happy Hatch<small>Trading & Inventory – Data Entry Forms</small></h1>
+<button id="imp">Open workbook (.xlsx)</button><button id="exp">Save workbook (.xlsx)</button>
+<input type="file" id="file" accept=".xlsx,.xls" hidden></header>
+<nav id="nav"></nav>
+<main id="main"></main>
+<div id="pall"></div><div class="toast" id="toast"></div>
+<dialog id="dlg"><form method="dialog" id="frm" novalidate><div class="dh" id="dh"></div><div class="db" id="db"></div>
+<div class="df"><span class="msg" id="msg"></span><button type="button" id="cancel">Cancel</button><button type="submit" class="pri" id="save">Save</button></div></form></dialog>
+<script>
+"use strict";
+const $=s=>document.querySelector(s);
+const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const inr=v=>"₹"+Number(v||0).toLocaleString("en-IN",{minimumFractionDigits:2,maximumFractionDigits:2});
+const inr0=v=>"₹"+Math.round(Number(v||0)).toLocaleString("en-IN");
+const num=v=>Number(v)||0;
+const dfmt=s=>{if(!s)return"";const[y,m,d]=s.split("-");return d+"-"+["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"][+m-1]+"-"+y};
+
+/* ---------------- data (sample rows – replace by opening your workbook) ---------------- */
+const RT={HH_S000101:[.09,.09,0],HH_S000102:[0,0,.18],HH_S000103:[.09,.09,0],HH_S000104:[0,0,.18],HH_S000105:[.09,.09,0],HH_S000106:[0,0,.18]};/* illustrative sample tax rates */
+const S={
+PRODUCTS:[
+["HH000101","Whisk-4383 Egg Beater with Wooden Handle","Silicone-wire whisk, wooden handle; green / white; 12 pcs per carton",191,12,.2,399],
+["HH000102","Brush-1214 Silicone Brush","Silicone dish brush; green / blue; 12 pcs per carton",1108,40,.2,1999],
+["HH000103","Scissor-5199 European-Style Stationery Scissors","Stationery scissors; green / blue; 12 pcs per carton",183,10,.2,349],
+["HH000104","Peeler-9197 Y Shape Peeler","Y-shape peeler, green handle; 12 pcs per carton",1102,40,.2,1599],
+["HH000105","2 Pieces Watercan Holder","Felt carry holder for 2 bottles; carton = 170 pcs, min order 170 pcs",38,3,.2,99],
+["HH000106","Sports Vacuum Bottle 2 Litres","Vacuum insulated, 2 L, olive green; 25 pcs per carton",1870,90,.2,2999]].map(r=>({"Product Code":r[0],"Product Name":r[1],"Specification":r[2],"Base Price":r[3],"Transit Charges":r[4],"Profitability Percentage":r[5],"Market Price":r[6],"Photo File":"Product_Photos/"+r[0]+".jpg","Remarks":""})),
+CUSTOMERS:[["CUS-001","Sample Retail Traders","Anita Rao","9000000001","anita@example.com","12 Market Road","Chennai"],["CUS-002","Sample Home Store","Ravi Kumar","9000000002","ravi@example.com","45 Main Street","Coimbatore"],["CUS-003","Sample E-Commerce Seller","Meena S","9000000003","meena@example.com","7 Tech Park","Bengaluru"],["CUS-004","Sample Stationery Mart","John D","9000000004","john@example.com","3 College Lane","Madurai"]].map(r=>({"Customer Number":r[0],"Customer Name":r[1],"Contact Person":r[2],"Phone":r[3],"Email":r[4],"Address":r[5],"City":r[6],"Remarks":""})),
+PURCHASE:[["PUR-001","2026-09-05","HH000101",120,191],["PUR-002","2026-09-05","HH000102",60,1108],["PUR-003","2026-09-12","HH000103",120,183],["PUR-004","2026-09-12","HH000104",60,1102],["PUR-005","2026-09-20","HH000105",340,38],["PUR-006","2026-09-25","HH000106",50,1870]].map(r=>({"Purchase Number":r[0],"Date of Purchase":r[1],"Product Code":r[2],"Quantity":r[3],"Unit Cost":r[4],"Shipper Name":"Sample Logistics","Shipper Contact":"9200000001","Shipper Email":"dispatch@example.com","Remarks":""})),
+SALES:[["HH_S000101","2026-09-18","CUS-001","HH000101",399,24],["HH_S000102","2026-09-22","CUS-002","HH000102",1999,12],["HH_S000103","2026-09-28","CUS-001","HH000103",349,36],["HH_S000104","2026-10-03","CUS-003","HH000105",99,170],["HH_S000104","2026-10-03","CUS-003","HH000106",2999,10],["HH_S000105","2026-10-05","CUS-001","HH000104",1599,12],["HH_S000105","2026-10-05","CUS-001","HH000101",399,12],["HH_S000106","2026-10-08","CUS-004","HH000103",349,24]].map(r=>({"Order Number":r[0],"Date of Sale":r[1],"Customer Number":r[2],"Product Code":r[3],"MRP":r[4],"Quantity":r[5],"GST (%)":0,"CGST (%)":RT[r[0]][0],"SGST (%)":RT[r[0]][1],"IGST (%)":RT[r[0]][2],"Remarks":""}))
+};
+
+/* ---------------- calculations (same rules as the workbook) ---------------- */
+const find=(sheet,key,val)=>S[sheet].find(r=>r[key]===val);
+const stock=code=>S.PURCHASE.filter(p=>p["Product Code"]===code).reduce((a,p)=>a+num(p.Quantity),0)-S.SALES.filter(s=>s["Product Code"]===code).reduce((a,s)=>a+num(s.Quantity),0);
+function calc(sheet,r){
+ const o={...r};
+ if(sheet==="PRODUCTS"){o["In Stock"]=stock(r["Product Code"]);o["Onboard Price"]=num(r["Base Price"])+num(r["Transit Charges"]);o["Net Price"]=o["Onboard Price"]+num(r["Profitability Percentage"])*o["Onboard Price"];o["Revenue"]=o["Net Price"]-o["Onboard Price"]}
+ if(sheet==="SALES"){const p=find("PRODUCTS","Product Code",r["Product Code"]);o["Product Name"]=p?p["Product Name"]:"";o["Product price"]=p?calc("PRODUCTS",p)["Net Price"]:0;o["Net Amount"]=num(r.MRP)*num(r.Quantity);o["Invoice No."]="INV-"+r["Order Number"]}
+ if(sheet==="PURCHASE"){const p=find("PRODUCTS","Product Code",r["Product Code"]);o["Product Name"]=p?p["Product Name"]:"";o["Total Cost"]=num(r.Quantity)*num(r["Unit Cost"])}
+ return o}
+
+/* ---------------- schema ---------------- */
+const T=(n,x={})=>({n,t:"text",...x});
+const SCHEMA={
+PRODUCTS:{key:"Product Code",label:"Products",cols:[T("Product Code",{req:1}),T("Product Name",{req:1}),T("Specification",{area:1}),T("In Stock",{c:1,k:"int"}),T("Base Price",{t:"number",k:"inr",req:1}),T("Transit Charges",{t:"number",k:"inr"}),T("Onboard Price",{c:1,k:"inr"}),T("Profitability Percentage",{t:"pct",k:"pct"}),T("Net Price",{c:1,k:"inr"}),T("Market Price",{t:"number",k:"inr"}),T("Revenue",{c:1,k:"inr"}),T("Photo File",{k:"photo"}),T("Remarks",{area:1})],
+ next:()=>"" },
+SALES:{key:"Order Number",label:"Sales",date:"Date of Sale",cols:[T("Order Number",{t:"order",req:1}),T("Date of Sale",{t:"date",req:1,k:"date"}),T("Customer Number",{t:"ref",ref:["CUSTOMERS","Customer Number","Customer Name"],req:1}),T("Product Code",{t:"ref",ref:["PRODUCTS","Product Code","Product Name"],req:1}),T("Product Name",{c:1}),T("Product price",{c:1,k:"inr"}),T("MRP",{t:"number",k:"inr",req:1}),T("Quantity",{t:"number",k:"int",req:1}),T("Net Amount",{c:1,k:"inr"}),T("GST (%)",{t:"pct",k:"pct"}),T("CGST (%)",{t:"pct",k:"pct"}),T("SGST (%)",{t:"pct",k:"pct"}),T("IGST (%)",{t:"pct",k:"pct"}),T("Invoice No.",{c:1}),T("Remarks",{area:1})]},
+CUSTOMERS:{key:"Customer Number",label:"Customers",cols:[T("Customer Number",{req:1}),T("Customer Name",{req:1}),T("Contact Person"),T("Phone"),T("Email"),T("Address",{area:1}),T("City"),T("Remarks",{area:1})]},
+PURCHASE:{key:"Purchase Number",label:"Purchase",date:"Date of Purchase",cols:[T("Purchase Number",{req:1}),T("Date of Purchase",{t:"date",req:1,k:"date"}),T("Product Code",{t:"ref",ref:["PRODUCTS","Product Code","Product Name"],req:1}),T("Product Name",{c:1}),T("Quantity",{t:"number",k:"int",req:1}),T("Unit Cost",{t:"number",k:"inr",req:1}),T("Total Cost",{c:1,k:"inr"}),T("Shipper Name"),T("Shipper Contact"),T("Shipper Email",{t:"email"}),T("Remarks",{area:1})]},
+};
+const TABS=["DASHBOARD","PRODUCTS","SALES","CUSTOMERS","PURCHASE","INVOICE"];
+const LABEL={DASHBOARD:"Dashboard",INVOICE:"Invoice",...Object.fromEntries(Object.entries(SCHEMA).map(([k,v])=>[k,v.label]))};
+let tab="DASHBOARD",q={},dates={from:"2026-09-01",to:"2026-10-31",low:20},inv={order:"HH_S000105",seller:"Happy Hatch"};
+
+const fmtv=(c,v)=>{if(v===undefined||v===null||v==="")return"";if(c.k==="inr")return inr(v);if(c.k==="pct")return(num(v)*100).toFixed(1)+"%";if(c.k==="date")return dfmt(v);if(c.k==="int")return num(v).toLocaleString("en-IN");return String(v)};
+function toast(m){const t=$("#toast");t.textContent=m;t.style.display="block";clearTimeout(toast.t);toast.t=setTimeout(()=>t.style.display="none",2600)}
+
+/* ---------------- views ---------------- */
+const photoCell=r=>r["Photo File"]?`<img class="th" src="${esc(r.__img||r["Photo File"])}" alt="" onerror="this.style.display='none'"> ${esc(r["Photo File"])}`:"";
+function invoiceHTML(order){
+ const lines=S.SALES.filter(x=>x["Order Number"]===order).map(x=>calc("SALES",x));if(!lines.length)return"";
+ const f=lines[0],c=find("CUSTOMERS","Customer Number",f["Customer Number"])||{},sub=lines.reduce((a,l)=>a+l["Net Amount"],0);
+ const tx=[["GST","GST (%)"],["CGST","CGST (%)"],["SGST","SGST (%)"],["IGST","IGST (%)"]].map(([l,k])=>({l,p:num(f[k]),a:sub*num(f[k])})),tot=sub+tx.reduce((a,t)=>a+t.a,0);
+ return `<div class="inv"><div class="ilogo">LOGO</div><h2 style="margin-top:0;font-size:22px">Sales Invoice</h2>
+ <div style="display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap"><div><b>${esc(inv.seller)}</b></div><div>Invoice no. <b>INV-${esc(order)}</b><br>Date: ${dfmt(f["Date of Sale"])}<br>Customer no.: ${esc(f["Customer Number"])}</div></div>
+ <p><small style="color:var(--mut)">Bill to</small><br><b>${esc(c["Customer Name"])}</b><br>${esc(c.Address)}<br>${esc(c.City)}<br>${c.Phone?"Phone: "+esc(c.Phone):""}</p>
+ <table><thead><tr><th>#</th><th>Code</th><th>Product</th><th class="n">Qty</th><th class="n">MRP</th><th class="n">Amount</th></tr></thead><tbody>${lines.map((l,i)=>`<tr><td>${i+1}</td><td>${esc(l["Product Code"])}</td><td>${esc(l["Product Name"])}</td><td class="n">${l.Quantity}</td><td class="n">${inr(l.MRP)}</td><td class="n">${inr(l["Net Amount"])}</td></tr>`).join("")}</tbody></table>
+ <table style="width:auto;margin:12px 0 0 auto;min-width:300px"><tbody><tr><td><b>Subtotal</b></td><td class="n">${inr(sub)}</td></tr>${tx.map(t=>`<tr><td>${t.l} (${+(t.p*100).toFixed(2)}%)</td><td class="n">${inr(t.a)}</td></tr>`).join("")}<tr><td><b style="font-size:16px">TOTAL</b></td><td class="n"><b style="font-size:16px">${inr(tot)}</b></td></tr></tbody></table>
+ <p style="font-size:12px;color:var(--mut)">Each tax amount = rate × Subtotal; rates come from the order's Sales entries. Confirm rates and invoice format with Finance and review before sharing with the customer.</p></div>`}
+function printInvoices(list){
+ if(!list.length){toast("No sales entries to print");return}
+ $("#pall").innerHTML=list.map(o=>`<div class="pg">${invoiceHTML(o)}</div>`).join("");
+ document.body.classList.add("pa");setTimeout(()=>{window.print()},50)}
+window.addEventListener("afterprint",()=>{document.body.classList.remove("pa");$("#pall").innerHTML=""});
+
+function renderNav(){$("#nav").innerHTML=TABS.map(t=>`<button class="${t===tab?"on":""}" data-t="${t}">${LABEL[t]}</button>`).join("")}
+$("#nav").onclick=e=>{const b=e.target.closest("button");if(b){tab=b.dataset.t;render()}};
+function render(){renderNav();const m=$("#main");if(tab==="DASHBOARD")m.innerHTML=dashboard();else if(tab==="INVOICE")m.innerHTML=invoice();else m.innerHTML=sheetView(tab);bind()}
+
+function sheetView(sh){
+ const sc=SCHEMA[sh],term=(q[sh]||"").toLowerCase(),df=sc.date?(dates["f"+sh]||""):"",dt=sc.date?(dates["t"+sh]||""):"";
+ let rows=S[sh].map((r,i)=>({...calc(sh,r),__i:i}));
+ if(term)rows=rows.filter(r=>sc.cols.some(c=>String(r[c.n]??"").toLowerCase().includes(term)));
+ if(sc.date){if(df)rows=rows.filter(r=>r[sc.date]>=df);if(dt)rows=rows.filter(r=>r[sc.date]<=dt)}
+ const head=sc.cols.map(c=>`<th class="${c.k==="inr"||c.k==="int"?"n":""}">${esc(c.n)}</th>`).join("")+"<th></th>";
+ const body=rows.map(r=>`<tr>`+sc.cols.map(c=>`<td class="${c.c?"c ":""}${c.k==="inr"||c.k==="int"?"n":""}" title="${esc(r[c.n])}">${c.k==="photo"?photoCell(r):esc(fmtv(c,r[c.n]))}</td>`).join("")+`<td class="act">${sh==="SALES"?`<button data-inv="${esc(r["Order Number"])}">Invoice</button> `:""}<button data-edit="${r.__i}">Edit</button> <button class="del" data-del="${r.__i}">Delete</button></td></tr>`).join("");
+ return `<div class="bar"><label>Search ${esc(sc.label)}<input id="srch" value="${esc(q[sh]||"")}" placeholder="Type any text…" style="width:240px"></label>
+ ${sc.date?`<label>From date<input type="date" id="df" value="${df}"></label><label>To date<input type="date" id="dt" value="${dt}"></label>`:""}
+ <button id="clr">Clear search</button>${sh==="SALES"?`<button id="pAll">Print invoices for these orders</button>`:""}<span style="flex:1"></span><button class="pri" id="new">+ New ${esc(sc.label.replace(/s$/,""))}</button></div>
+ <div class="card tw"><table><thead><tr>${head}</tr></thead><tbody>${body}</tbody></table>${rows.length?"":`<div class="empty">No records match. Clear the search or add a new record.</div>`}</div>
+ <p style="color:var(--mut);font-size:12px">${rows.length} of ${S[sh].length} records · shaded columns are calculated automatically.</p>`}
+
+function dashboard(){
+ const inR=(d)=>d>=dates.from&&d<=dates.to;
+ const sl=S.SALES.filter(s=>inR(s["Date of Sale"])).map(s=>calc("SALES",s)),pu=S.PURCHASE.filter(p=>inR(p["Date of Purchase"])).map(p=>calc("PURCHASE",p));
+ const rev=sl.reduce((a,s)=>{const p=find("PRODUCTS","Product Code",s["Product Code"]);return a+(p?calc("PRODUCTS",p).Revenue*num(s.Quantity):0)},0);
+ const prods=S.PRODUCTS.map(p=>calc("PRODUCTS",p));
+ const low=prods.filter(p=>p["In Stock"]<=dates.low).length;
+ const K=[["Sales (Net Amount)",inr0(sl.reduce((a,s)=>a+s["Net Amount"],0))],["Units sold",sl.reduce((a,s)=>a+num(s.Quantity),0)],["Sales entries",sl.length],["Estimated revenue (profit)",inr0(rev)],["Purchase cost",inr0(pu.reduce((a,p)=>a+p["Total Cost"],0))],["Units purchased",pu.reduce((a,p)=>a+num(p.Quantity),0)],["Units in stock now",prods.reduce((a,p)=>a+p["In Stock"],0)],["Low / out-of-stock products",low]];
+ const sumP=prods.map(p=>{const c=p["Product Code"],ss=sl.filter(s=>s["Product Code"]===c);return{c,n:p["Product Name"],qs:ss.reduce((a,s)=>a+num(s.Quantity),0),amt:ss.reduce((a,s)=>a+s["Net Amount"],0),qp:pu.filter(x=>x["Product Code"]===c).reduce((a,x)=>a+num(x.Quantity),0),st:p["In Stock"]}});
+ const mx=Math.max(1,...sumP.map(x=>x.amt));
+ const list=(rows,cols)=>`<div class="card tw"><table><thead><tr>${cols.map(c=>`<th>${c[0]}</th>`).join("")}</tr></thead><tbody>${rows.map(r=>`<tr>${cols.map(c=>`<td>${esc(c[2]?c[2](r[c[1]]):r[c[1]])}</td>`).join("")}</tr>`).join("")||`<tr><td colspan="9" class="empty">No records in this date range.</td></tr>`}</tbody></table></div>`;
+ return `<div class="bar"><label>From date<input type="date" id="dFrom" value="${dates.from}"></label><label>To date (inclusive)<input type="date" id="dTo" value="${dates.to}"></label><label>Low-stock threshold<input type="number" id="dLow" value="${dates.low}" style="width:110px"></label></div>
+ <div class="kpis">${K.map(k=>`<div class="card kpi"><small>${k[0]}</small><b>${k[1]}</b></div>`).join("")}</div>
+ <h2>Sales amount by product</h2><div class="card bars" style="padding:10px 14px">${sumP.map(x=>`<div class="r"><span title="${esc(x.n)}">${esc(x.c)}</span><i style="width:${x.amt/mx*100}%"></i><span>${inr0(x.amt)}</span></div>`).join("")||'<div class="empty">No products yet.</div>'}</div>
+ <h2>Product summary</h2>${list(sumP,[["Code","c"],["Product","n"],["Qty sold","qs"],["Sales amount","amt",inr0],["Qty purchased","qp"],["In stock","st"]])}
+ <h2>Sales between the selected dates</h2>${list(sl,[["Order No.","Order Number"],["Date","Date of Sale",dfmt],["Customer","Customer Number"],["Product","Product Name"],["Qty","Quantity"],["Net Amount","Net Amount",inr0]])}
+ <h2>Purchases between the selected dates</h2>${list(pu,[["Purchase No.","Purchase Number"],["Date","Date of Purchase",dfmt],["Product","Product Name"],["Qty","Quantity"],["Total cost","Total Cost",inr0]])}`}
+
+function invoice(){
+ const orders=[...new Set(S.SALES.map(x=>x["Order Number"]))];
+ if(!orders.includes(inv.order))inv.order=orders[orders.length-1]||"";
+ return `<div class="bar noprint"><label>Order Number<select id="iOrder">${orders.map(o=>{const f=S.SALES.find(x=>x["Order Number"]===o);return`<option value="${esc(o)}" ${o===inv.order?"selected":""}>${esc(o)} – ${esc(f["Customer Number"])} – ${dfmt(f["Date of Sale"])}</option>`}).join("")}</select></label>
+ <label>Seller name<input id="iSeller" value="${esc(inv.seller)}"></label>
+ <button class="pri" id="iPrint">Print / save as PDF</button><button id="iAll">Print all invoices</button></div>
+ ${inv.order?invoiceHTML(inv.order):'<div class="card empty">No sales yet.</div>'}`}
+function bind(){
+ const on=(id,ev,fn)=>{const e=$(id);if(e)e[ev]=fn};
+ if(SCHEMA[tab]){const sc=SCHEMA[tab];
+  on("#srch","oninput",e=>{q[tab]=e.target.value;const p=e.target.selectionStart;render();const s=$("#srch");s.focus();s.setSelectionRange(p,p)});
+  on("#df","onchange",e=>{dates["f"+tab]=e.target.value;render()});on("#dt","onchange",e=>{dates["t"+tab]=e.target.value;render()});
+  on("#clr","onclick",()=>{q[tab]="";dates["f"+tab]="";dates["t"+tab]="";render()});
+  on("#new","onclick",()=>openForm(tab,null));on("#pAll","onclick",()=>{const sc2=SCHEMA.SALES,t=(q.SALES||"").toLowerCase(),f=dates.fSALES||"",to=dates.tSALES||"";printInvoices([...new Set(S.SALES.filter(r=>{const c=calc("SALES",r);return(!t||sc2.cols.some(k=>String(c[k.n]??"").toLowerCase().includes(t)))&&(!f||r["Date of Sale"]>=f)&&(!to||r["Date of Sale"]<=to)}).map(r=>r["Order Number"]))])});
+  $("#main").onclick=e=>{const b=e.target.closest("button");if(!b)return;
+   if(b.dataset.edit!==undefined)openForm(tab,+b.dataset.edit);
+   if(b.dataset.inv!==undefined)printInvoices([b.dataset.inv]);
+   if(b.dataset.del!==undefined){const rr=S[tab][+b.dataset.del];if(rr&&confirm(`Delete ${sc.label.replace(/s$/,"")} "${rr[sc.key]}"${tab==="SALES"?" – "+rr["Product Code"]:""}? This cannot be undone.`)){S[tab].splice(+b.dataset.del,1);toast("Deleted");render()}}}}
+ else $("#main").onclick=null;
+ on("#dFrom","onchange",e=>{dates.from=e.target.value;render()});on("#dTo","onchange",e=>{dates.to=e.target.value;render()});on("#dLow","onchange",e=>{dates.low=num(e.target.value);render()});
+ on("#iOrder","onchange",e=>{inv.order=e.target.value;render()});on("#iPrint","onclick",()=>printInvoices([inv.order]));on("#iAll","onclick",()=>printInvoices([...new Set(S.SALES.map(x=>x["Order Number"]))]));on("#iSeller","onchange",e=>{inv.seller=e.target.value;render()});
+}
+
+/* ---------------- form (create / edit) ---------------- */
+let cur=null;
+function nextOrder(){return"HH_S"+String(Math.max(100,...S.SALES.map(r=>parseInt(String(r["Order Number"]).replace(/\D/g,""))||0))+1).padStart(6,"0")}
+function nextId(sh){const sc=SCHEMA[sh],k=sc.key;if(sh==="SALES")return nextOrder();
+ const pre={CUSTOMERS:"CUS-",PURCHASE:"PUR-"}[sh];if(!pre)return"";const n=Math.max(0,...S[sh].map(r=>parseInt(String(r[k]).replace(/\D/g,""))||0))+1;return pre+String(n).padStart(3,"0")}
+function openForm(sh,key){
+ const sc=SCHEMA[sh],edit=key!==null;
+ const rec=edit?{...S[sh][key]}:{};
+ if(!edit){if(sc.key!=="Product Code"&&sh!=="SALES")rec[sc.key]=nextId(sh);if(sh==="SALES"||sh==="PURCHASE")rec[sc.date]=new Date().toISOString().slice(0,10);if(sh==="PRODUCTS"){rec["Profitability Percentage"]=.2;rec["Transit Charges"]=0}if(sh==="SALES"){["GST (%)","CGST (%)","SGST (%)","IGST (%)"].forEach(k=>rec[k]=0)}}
+ cur={sh,edit,key,rec};
+ $("#dh").textContent=(edit?"Edit ":"New ")+sc.label.replace(/s$/,"");
+ $("#db").innerHTML=sc.cols.map(c=>{
+  const v=rec[c.n]??"",w=c.area||c.n==="Product Name"?" w":"";
+  if(c.c)return`<label class="${w}">${esc(c.n)} (automatic)<div class="calc" data-calc="${esc(c.n)}">–</div></label>`;
+  const lock=edit&&c.n===sc.key?"readonly":"",id=`f_${c.n.replace(/\W/g,"_")}`,req=c.req?" *":"";
+  if(c.k==="photo")return`<div class="w pbox"><span>Photo File (image in the Product_Photos folder)</span><input id="${id}" data-n="Photo File" value="${esc(v)}" placeholder="Product_Photos/ProductCode.jpg">
+   <div style="display:flex;gap:12px;align-items:center;margin-top:6px"><img id="pv" alt="" style="height:90px;max-width:140px;object-fit:contain;border:1px dashed var(--line);border-radius:4px;display:none"><div><input type="file" id="pf" accept="image/*"><button type="button" id="pdl" style="display:none;margin-top:6px"></button></div></div></div>`;
+  if(c.t==="order"){const ords=[...new Set(S.SALES.map(x=>x["Order Number"]))];
+   if(edit)return`<label>${esc(c.n)}<select id="${id}" data-n="${esc(c.n)}" disabled><option value="${esc(v)}">${esc(v)}</option></select></label>`;
+   return`<label>${esc(c.n)} *<select id="${id}" data-n="${esc(c.n)}"><option value="__new__">+ New order (${nextOrder()})</option>${ords.map(o=>{const f=S.SALES.find(x=>x["Order Number"]===o);return`<option value="${esc(o)}">${esc(o)} – ${esc(f["Customer Number"])} – ${dfmt(f["Date of Sale"])} (add product)</option>`}).join("")}</select></label>`}
+  if(c.t==="ref"){const[rs,rk,rl]=c.ref;return`<label>${esc(c.n)}${req}<select id="${id}" data-n="${esc(c.n)}"><option value="">Select…</option>${S[rs].map(x=>`<option value="${esc(x[rk])}" ${x[rk]===v?"selected":""}>${esc(x[rk])} – ${esc(x[rl])}</option>`).join("")}</select></label>`}
+  if(c.area)return`<label class="w">${esc(c.n)}<textarea id="${id}" data-n="${esc(c.n)}" rows="2">${esc(v)}</textarea></label>`;
+  const type=c.t==="pct"?"number":(c.t==="number"?"number":c.t==="date"?"date":c.t==="email"?"email":"text"),val=c.t==="pct"?(v===""?"":+(num(v)*100).toFixed(4)):v;
+  return`<label class="${w}">${esc(c.n)}${c.t==="pct"&&!c.n.includes("(%)")?" (%)":""}${req}<input id="${id}" data-n="${esc(c.n)}" type="${type}" ${type==="number"?'step="any" min="0"':""} value="${esc(val)}" ${lock}></label>`}).join("");
+ $("#msg").textContent="";refreshCalc();$("#dlg").showModal();orderLock();photoInit();
+ const f=$("#db input:not([readonly]),#db select");if(f)f.focus();
+}
+function photoInit(){
+ if(!cur||cur.sh!=="PRODUCTS")return;cur.file=null;cur.img=cur.rec.__img||"";
+ const pv=$("#pv"),inp=$('#db [data-n="Photo File"]'),pf=$("#pf"),dl=$("#pdl");
+ const show=()=>{const src=cur.img||inp.value.trim();if(!src){pv.style.display="none";return}pv.onload=()=>pv.style.display="block";pv.onerror=()=>pv.style.display="none";pv.src=src};
+ const code=()=>($('#db [data-n="Product Code"]').value.trim()||"ProductCode");
+ inp.addEventListener("input",()=>{cur.img=cur.file?cur.img:"";show()});
+ pf.onchange=()=>{const f=pf.files[0];if(!f)return;const ext=(f.name.split(".").pop()||"jpg").toLowerCase();cur.file=f;cur.ext=ext;
+  const rd=new FileReader();rd.onload=()=>{cur.img=rd.result;inp.value="Product_Photos/"+code()+"."+ext;dl.textContent="Download as "+code()+"."+ext;dl.style.display="inline-block";show()};rd.readAsDataURL(f)};
+ dl.onclick=()=>{const a=document.createElement("a");a.href=URL.createObjectURL(cur.file);a.download=code()+"."+cur.ext;a.click()};
+ show()}
+const TAXF=["GST (%)","CGST (%)","SGST (%)","IGST (%)"];
+function orderLock(){if(!cur||cur.sh!=="SALES"||cur.edit)return;const o=$('#db [data-n="Order Number"]').value,f=o==="__new__"?null:S.SALES.find(x=>x["Order Number"]===o);
+ const els=["Date of Sale","Customer Number",...TAXF].map(n=>[n,$(`#db [data-n="${n}"]`)]);
+ els.forEach(([n,e])=>{if(!e)return;if(f)e.value=TAXF.includes(n)?+(num(f[n])*100).toFixed(4):f[n];else if(e.disabled)e.value=TAXF.includes(n)?0:(n==="Customer Number"?"":new Date().toISOString().slice(0,10));e.disabled=!!f})}
+function readForm(){const r={};cur&&SCHEMA[cur.sh].cols.forEach(c=>{if(c.c)return;const e=$(`#db [data-n="${c.n}"]`)||$(`#db input[id="f_${c.n.replace(/\W/g,"_")}"]`);if(!e)return;let v=e.value.trim();if(c.t==="order"&&v==="__new__")v=nextOrder();if(c.t==="number"||c.t==="pct")v=v===""?"":num(v)/(c.t==="pct"?100:1);r[c.n]=v});return r}
+function refreshCalc(){
+ if(!cur)return;const sh=cur.sh,r=readForm(),el=$("#msg");let warn="";
+ const tmp={...cur.rec,...r};
+ const c=calc(sh,tmp);
+ document.querySelectorAll("[data-calc]").forEach(d=>{const col=SCHEMA[sh].cols.find(x=>x.n===d.dataset.calc);d.textContent=fmtv(col,c[d.dataset.calc])||"–"});
+ if(sh==="SALES"&&r["Product Code"]){const p=find("PRODUCTS","Product Code",r["Product Code"]);let avail=stock(r["Product Code"]);if(cur.edit&&cur.rec["Product Code"]===r["Product Code"])avail+=num(cur.rec.Quantity);
+  if(num(r.Quantity)>avail)warn=`Only ${avail} in stock for ${r["Product Code"]}.`}
+ if(!el.dataset.err){el.textContent=warn;el.className="msg w"}
+}
+$("#db").addEventListener("input",()=>{$("#msg").dataset.err="";refreshCalc()});
+$("#db").addEventListener("change",e=>{const n=e.target.dataset.n;if(n==="Order Number")orderLock();if(cur&&cur.sh==="SALES"&&n==="Product Code"){const p=find("PRODUCTS","Product Code",e.target.value),m=$('#db [data-n="MRP"]');if(p&&m&&!m.value)m.value=p["Market Price"]||""}refreshCalc()});
+$("#cancel").onclick=()=>$("#dlg").close();
+$("#frm").addEventListener("submit",e=>{
+ e.preventDefault();const sh=cur.sh,sc=SCHEMA[sh],r=readForm(),el=$("#msg");
+ const miss=sc.cols.filter(c=>c.req&&!c.c&&(r[c.n]===""||r[c.n]===undefined)).map(c=>c.n);
+ const fail=m=>{el.dataset.err="1";el.className="msg";el.textContent=m};
+ if(miss.length)return fail("Fill in: "+miss.join(", "));
+ if(sh==="SALES"||sh==="PURCHASE"){if(!(num(r.Quantity)>0))return fail("Quantity must be greater than 0.")}
+ if(r["Shipper Email"]||r["Email"]){const em=r["Shipper Email"]||r["Email"];if(!/^\S+@\S+\.\S+$/.test(em))return fail("Enter a valid email address.")}
+ if(sh==="PRODUCTS"){if(cur.file)r["Photo File"]="Product_Photos/"+r["Product Code"]+"."+cur.ext;else if(!r["Photo File"])r["Photo File"]="Product_Photos/"+r["Product Code"]+".jpg";if(cur.img)r.__img=cur.img}
+ if(sh==="SALES"){const dup=S.SALES.findIndex((x,i)=>x["Order Number"]===r["Order Number"]&&x["Product Code"]===r["Product Code"]&&!(cur.edit&&i===cur.key));if(dup>=0)return fail(`${r["Product Code"]} is already on order ${r["Order Number"]}. Edit that line instead of adding it again.`)}
+ else if(!cur.edit&&S[sh].some(x=>String(x[sc.key])===String(r[sc.key])))return fail(`${sc.key} "${r[sc.key]}" already exists. Use a different one or edit that record.`);
+ if(cur.edit){S[sh][cur.key]={...S[sh][cur.key],...r,[sc.key]:S[sh][cur.key][sc.key]};
+  if(sh==="SALES")S.SALES.forEach(x=>{if(x["Order Number"]===r["Order Number"]){["Date of Sale","Customer Number",...TAXF].forEach(k=>x[k]=r[k])}})}else S[sh].push(r);
+ $("#dlg").close();toast(cur.edit?"Changes saved":"Record added");render()});
+
+/* ---------------- Excel import / export (same layout as the workbook, header on row 4) ---------------- */
+const serialToIso=n=>{const d=new Date(Date.UTC(1899,11,30)+n*864e5);return d.toISOString().slice(0,10)};
+const isoToSerial=s=>(Date.UTC(+s.slice(0,4),+s.slice(5,7)-1,+s.slice(8,10))-Date.UTC(1899,11,30))/864e5;
+$("#imp").onclick=()=>$("#file").click();
+$("#file").onchange=async e=>{
+ const f=e.target.files[0];if(!f)return;
+ try{const wb=XLSX.read(await f.arrayBuffer(),{type:"array"});let n=0;
+  for(const sh of Object.keys(SCHEMA)){const w=wb.Sheets[sh];if(!w)continue;const sc=SCHEMA[sh];
+   const rows=XLSX.utils.sheet_to_json(w,{range:3,defval:""}).filter(r=>String(r[sc.key]).trim()!=="");
+   S[sh]=rows.map(r=>{const o={};sc.cols.forEach(c=>{if(c.c)return;let v=r[c.n];if(c.t==="date"&&typeof v==="number")v=serialToIso(v);else if(c.t==="date"&&v instanceof Date)v=v.toISOString().slice(0,10);if(c.t==="number"||c.t==="pct")v=v===""?"":num(v);else if(c.t!=="date")v=String(v??"");o[c.n]=v});return o});n+=S[sh].length}
+  toast(`Opened ${f.name}: ${n} records`);render()}catch(x){alert("Could not read this file. Open the Happy_Hatch_Trading_Inventory_Tracker.xlsx workbook.\n"+x.message)}
+ e.target.value=""};
+$("#exp").onclick=()=>{
+ const wb=XLSX.utils.book_new(),R=2000;
+ const F={PRODUCTS:{"In Stock":r=>`SUMIFS(PURCHASE!$E$5:$E$${R},PURCHASE!$C$5:$C$${R},A${r})-SUMIFS(SALES!$H$5:$H$${R},SALES!$D$5:$D$${R},A${r})`,"Onboard Price":r=>`E${r}+F${r}`,"Net Price":r=>`G${r}+H${r}*G${r}`,"Revenue":r=>`I${r}-G${r}`},
+  SALES:{"Product Name":r=>`IFERROR(INDEX(PRODUCTS!$B$5:$B$${R},MATCH(D${r},PRODUCTS!$A$5:$A$${R},0)),"")`,"Product price":r=>`IFERROR(INDEX(PRODUCTS!$I$5:$I$${R},MATCH(D${r},PRODUCTS!$A$5:$A$${R},0)),0)`,"Net Amount":r=>`G${r}*H${r}`,"Invoice No.":r=>`"INV-"&A${r}`},
+  PURCHASE:{"Product Name":r=>`IFERROR(INDEX(PRODUCTS!$B$5:$B$${R},MATCH(C${r},PRODUCTS!$A$5:$A$${R},0)),"")`,"Total Cost":r=>`E${r}*F${r}`}};
+ for(const sh of ["DASHBOARD_SKIP",...Object.keys(SCHEMA)]){if(sh==="DASHBOARD_SKIP")continue;const sc=SCHEMA[sh],ws={};
+  ws["A1"]={t:"s",v:sh};ws["A2"]={t:"s",v:"Exported from the data-entry forms. Computed columns are live formulas."};
+  sc.cols.forEach((c,ci)=>ws[XLSX.utils.encode_cell({r:3,c:ci})]={t:"s",v:c.n});
+  S[sh].forEach((rec,i)=>{const row=5+i,cr=calc(sh,rec);sc.cols.forEach((c,ci)=>{const ref=XLSX.utils.encode_cell({r:4+i,c:ci});let v=cr[c.n];let cell;
+   if(c.t==="date"&&v)cell={t:"n",v:isoToSerial(v),z:"dd-mmm-yyyy"};else if(typeof v==="number")cell={t:"n",v};else cell={t:"s",v:String(v??"")};
+   if(F[sh]&&F[sh][c.n])cell.f=F[sh][c.n](row);if(c.k==="inr")cell.z='"₹"#,##0.00';if(c.k==="pct")cell.z="0.0%";ws[ref]=cell})});
+  ws["!ref"]=XLSX.utils.encode_range({s:{r:0,c:0},e:{r:4+Math.max(S[sh].length,1),c:sc.cols.length-1}});ws["!cols"]=sc.cols.map(c=>({wch:Math.max(14,Math.min(40,c.n.length+6))}));
+  XLSX.utils.book_append_sheet(wb,ws,sh)}
+ XLSX.writeFile(wb,"Happy_Hatch_Trading_Inventory_Data.xlsx");toast("Saved Happy_Hatch_Trading_Inventory_Data.xlsx")};
+render();
+</script></body></html>
