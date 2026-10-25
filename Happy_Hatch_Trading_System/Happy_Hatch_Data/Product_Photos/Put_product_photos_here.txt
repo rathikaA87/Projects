@@ -1,0 +1,1 @@
+Save product photos here, named by product code (e.g. HH101.jpg).
