@@ -1,7 +1,6 @@
 GITHUB MODE (current)
-  The apps now load the data file from GitHub and save to GitHub (Save to GitHub button / Ctrl+S, one commit per save).
-  See GITHUB_SETUP.md in the Happy_Hatch_Trading_System folder. The local-file instructions below still apply if you choose "Open a local Excel file instead".
-  Works in any browser in GitHub mode.
+  The apps load this data file from GitHub and save to GitHub (Save to GitHub button / Ctrl+S, one commit per save). See GITHUB_SETUP.md.
+  The local-file instructions below still apply if you choose "Open a local Excel file instead".
 
 Happy Hatch Trading System
 --------------------------
@@ -48,6 +47,6 @@ Sales: MRP fills in automatically with the Product price (Net Price) and can be 
 
 Export Data (header button) downloads a copy of all current data as a new Excel file in your Downloads folder; it does not change the connected data file.
 
-Products: "Available Specifications" and "Available Colours" hold several values separated by commas (e.g. Red, Blue, Green).
+Products: "Available Colours" holds several values separated by commas (e.g. Red, Blue, Green).
 Sales items: each item has a Colour chosen from the product's Available Colours (the choice list appears automatically for products that have colours).
 Shipper: a separate sheet/tab for shipper details (Shipper Number, name, contact person, phone, e-mail, address, city). On each purchase pick the Shipper Number and the shipper name, contact and e-mail fill in automatically.
